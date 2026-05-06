@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Result from "./pages/Result";
 import History from "./pages/History";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Register from "./pages/Register"
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
         <Route path="/history" element={<History />} />
         <Route path="/dashboard"element={<ProtectedRoute><Dashboard /></ProtectedRoute>}/>
         <Route path="/history"element={<ProtectedRoute><History /></ProtectedRoute>}/>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );

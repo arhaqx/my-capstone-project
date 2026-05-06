@@ -14,4 +14,6 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+console.log(process.env.REACT_APP_API_URL);
+
 export default API;
