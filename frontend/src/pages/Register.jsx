@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import API from "../services/api";
 
 function Register() {
   const navigate = useNavigate();
@@ -21,28 +22,22 @@ function Register() {
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/auth/register/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
+      const response = await API.post(
+        "/auth/register/",
+        formData
       );
 
-      const data = await response.json();
+      alert("Register berhasil");
+      navigate("/login");
 
-      if (response.ok) {
-        alert("Register berhasil");
-        navigate("/login");
-      } else {
-        alert(JSON.stringify(data));
-      }
     } catch (error) {
       console.error(error);
-      alert("Terjadi error");
+
+      if (error.response?.data) {
+        alert(JSON.stringify(error.response.data));
+      } else {
+        alert("Terjadi error");
+      }
     }
   };
 
