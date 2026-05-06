@@ -4,11 +4,14 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "model")
+#MODEL_PATH = os.path.join(BASE_DIR, "model")
+MODEL_NAME = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
 
 # load model
-tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+#tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+#model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
 
 model.eval()
 
@@ -66,27 +69,6 @@ def predict_text(text):
         },
         "phq_score": phq_score
     }
-
-    # inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-
-    # with torch.no_grad():
-    #     outputs = model(**inputs)
-    #     probs = F.softmax(outputs.logits, dim=1)[0]
-
-    # p_negative = probs[0].item()
-    # p_neutral = probs[1].item()
-    # p_positive = probs[2].item()
-
-    # phq_score = convert_to_phq_score(p_negative, p_neutral, p_positive)
-
-    # return {
-    #     "probabilities": {
-    #         "negative": p_negative,
-    #         "neutral": p_neutral,
-    #         "positive": p_positive
-    #     },
-    #     "phq_score": phq_score
-    # }
 
 def interpretation(category):
     mapping = {
