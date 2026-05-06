@@ -160,4 +160,5 @@ NEWS_API_KEY = "39d231466a7e47e292281df70fbf7865"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "https://capstone-fullstack-b11.vercel.app",
 ]
