@@ -13,6 +13,21 @@ sys.path.append(BASE_DIR)
 from .models import History
 from ml.predict import predict_multiple 
 
+def translate_text(text):
+    try:
+        res = requests.post(
+            "https://libretranslate.de/translate",
+            data={
+                "q": text,
+                "source": "en",
+                "target": "id",
+                "format": "text"
+            },
+            timeout=5
+        )
+        return res.json().get("translatedText", text)
+    except:
+        return text
 
 class HomeView(APIView):
     def get(self, request):
@@ -65,7 +80,7 @@ class NewsView(APIView):
     def get(self, request):
         category = request.GET.get("category", "").lower()
 
-        # 🔥 mapping kategori → query yang lebih spesifik
+        # mapping kategori → query
         if category == "minimal":
             query = "mental wellness tips OR self care habits"
         elif category == "mild":
@@ -90,43 +105,42 @@ class NewsView(APIView):
         response = requests.get(url, params=params)
         data = response.json()
 
-        # 🔥 FILTER biar tidak random / politik / noise
         keywords = [
             "tips", "how", "guide", "therapy", "coping",
             "help", "mental", "health", "stress", "anxiety"
         ]
 
-        filtered_articles = []
+        articles = []
 
         for article in data.get("articles", []):
             title = (article.get("title") or "").lower()
             desc = (article.get("description") or "").lower()
-
             content = title + " " + desc
 
-            # 🔥 hanya ambil artikel yang relevan
+            # FILTER
             if any(k in content for k in keywords):
-                # skip artikel yang terlalu "news" atau politik
                 if any(bad in content for bad in ["trump", "court", "law", "government"]):
                     continue
 
-                filtered_articles.append({
-                    "title": article.get("title"),
-                    "description": article.get("description"),
+                # TRANSLATE
+                title_id = translate_text(article.get("title") or "")
+                desc_id = translate_text(article.get("description") or "")
+
+                articles.append({
+                    "title": title_id,
+                    "description": desc_id,
                     "url": article.get("url"),
                     "image": article.get("urlToImage")
                 })
 
-        # 🔥 fallback kalau hasil kosong
-        if len(filtered_articles) == 0:
+        # fallback kalau kosong
+        if len(articles) == 0:
             for article in data.get("articles", [])[:5]:
-                filtered_articles.append({
+                articles.append({
                     "title": article.get("title"),
                     "description": article.get("description"),
                     "url": article.get("url"),
                     "image": article.get("urlToImage")
                 })
 
-        return Response({
-            "articles": filtered_articles[:5]
-        })
+        return Response({"articles": articles[:5]})
