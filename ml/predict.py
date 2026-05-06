@@ -1,22 +1,9 @@
-import os
-import torch
-import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import requests
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-#MODEL_PATH = os.path.join(BASE_DIR, "model")
-MODEL_NAME = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
+HF_API_URL = "https://murera-mental-health-nlp.hf.space/run/predict"
 
-# load model
-#tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-#model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
-
-model.eval()
 
 def convert_to_phq_score(p_negative, p_neutral, p_positive):
-    # untuk lihat log cara kerja model
     score = (p_negative * 1.0) + (p_neutral * 0.4)
 
     if score < 0.3:
@@ -27,6 +14,7 @@ def convert_to_phq_score(p_negative, p_neutral, p_positive):
         return 2
     else:
         return 3
+
 
 def classify_phq(total_score):
     if total_score <= 3:
@@ -40,26 +28,28 @@ def classify_phq(total_score):
 
 
 def predict_text(text):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
+    payload = {
+        "data": [text]
+    }
 
-    with torch.no_grad():
-        outputs = model(**inputs)
-        probs = F.softmax(outputs.logits, dim=1)[0]
+    response = requests.post(HF_API_URL, json=payload)
 
-    p_negative = probs[0].item()
-    p_neutral = probs[1].item()
-    p_positive = probs[2].item()
+    result = response.json()
 
-    # 🔥 DEBUG
-    print("TEXT:", text)
-    print("NEG:", p_negative)
-    print("NEU:", p_neutral)
-    print("POS:", p_positive)
+    print("HF RESPONSE:", result)
 
-    phq_score = convert_to_phq_score(p_negative, p_neutral, p_positive)
+    # ambil hasil dari gradio
+    prediction = result["data"][0]
 
-    print("PHQ SCORE:", phq_score)
-    print("-------------")
+    p_negative = prediction["negative"]
+    p_neutral = prediction["neutral"]
+    p_positive = prediction["positive"]
+
+    phq_score = convert_to_phq_score(
+        p_negative,
+        p_neutral,
+        p_positive
+    )
 
     return {
         "probabilities": {
@@ -70,6 +60,7 @@ def predict_text(text):
         "phq_score": phq_score
     }
 
+
 def interpretation(category):
     mapping = {
         "Minimal": "Kondisi mental dalam batas normal.",
@@ -78,10 +69,11 @@ def interpretation(category):
         "Moderately Severe": "Disarankan konsultasi dengan profesional.",
         "Severe": "Segera cari bantuan profesional."
     }
+
     return mapping.get(category, "")
 
+
 def predict_multiple(answer_list):
-    #  Validasi input
     if not isinstance(answer_list, list) or len(answer_list) == 0:
         return {"error": "No valid input"}
 
@@ -89,25 +81,21 @@ def predict_multiple(answer_list):
     details = []
 
     for idx, item in enumerate(answer_list):
-        # Ambil score dari dropdown (utama)
+
         score = item.get("score", 0)
 
-        # Ambil text optional
         text = item.get("text", "").strip()
 
-        # Validasi score (biar aman)
         if score not in [0, 1, 2, 3]:
             score = 0
 
         total_score += score
 
-        #  NLP hanya dijalankan jika ada teks
         if text:
             nlp_result = predict_text(text)
         else:
             nlp_result = None
 
-        # Simpan detail per pertanyaan
         details.append({
             "question_index": idx,
             "score": score,
@@ -115,17 +103,9 @@ def predict_multiple(answer_list):
             "nlp": nlp_result
         })
 
-    #  Hitung rata-rata
     avg_score = total_score / len(answer_list)
 
-    #  Klasifikasi akhir
     category = classify_phq(total_score)
-
-    #  DEBUG (opsional, boleh dihapus nanti)
-    print("TOTAL SCORE:", total_score)
-    print("AVERAGE SCORE:", avg_score)
-    print("CATEGORY:", category)
-    print("======================")
 
     return {
         "total_score": total_score,
