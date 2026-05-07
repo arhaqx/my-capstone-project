@@ -163,3 +163,5 @@ NEWS_API_KEY = "39d231466a7e47e292281df70fbf7865"
 CORS_ALLOWED_ORIGINS = [
     "https://capstone-fullstack-b11.vercel.app",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
