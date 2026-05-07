@@ -22,10 +22,10 @@ function Register() {
     e.preventDefault();
 
     try {
-      const response = await API.post(
-        "/auth/register/",
-        formData
-      );
+      await API.post(
+      "/auth/register/",
+      formData
+    );
 
       alert("Register berhasil");
       navigate("/login");
