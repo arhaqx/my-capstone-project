@@ -1,4 +1,4 @@
-import QuestionForm from "../components/QuestionForm";
+import QuestionCard from "../components/QuestionCard";
 import Navbar from "../components/Navbar";
 
 export default function Dashboard() {

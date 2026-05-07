@@ -1,7 +1,8 @@
 import { useState } from "react";
 import API from "../services/api";
 
-export default function QuestionForm() {
+export default function QuestionCard() {
+
   const questions = [
     "Seberapa sering Anda merasa tidak tertarik atau tidak bersemangat melakukan aktivitas?",
     "Seberapa sering Anda merasa sedih, murung, atau putus asa?",
@@ -17,7 +18,10 @@ export default function QuestionForm() {
   ];
 
   const [answers, setAnswers] = useState(
-    questions.map(() => ({ score: "", text: "" }))
+    questions.map(() => ({
+      score: "",
+      text: "",
+    }))
   );
 
   const handleScoreChange = (index, value) => {
@@ -33,58 +37,106 @@ export default function QuestionForm() {
   };
 
   const handleSubmit = async () => {
-    if (answers.some(a => a.score === "")) {
+
+    if (answers.some((a) => a.score === "")) {
       alert("Semua pertanyaan harus dipilih");
       return;
     }
 
     try {
-      const res = await API.post("/predict-multi/", {
-        answers: answers,
-      });
 
-      localStorage.setItem("result", JSON.stringify(res.data));
+      const res = await API.post(
+        "/predict-multi/",
+        {
+          answers: answers,
+        }
+      );
+
+      localStorage.setItem(
+        "result",
+        JSON.stringify(res.data)
+      );
+
       window.location.href = "/result";
+
     } catch (err) {
-      console.log(err.response);
+
+      console.log(err);
+
       alert("Gagal submit");
     }
   };
 
   return (
-    <div>
-      <h2>Self Check</h2>
+    <div className="question-container">
+
+      <h1 className="question-title">
+        Mental Health Self Check
+      </h1>
+
+      <p className="question-subtitle">
+        Jawab pertanyaan berikut sesuai kondisi Anda
+      </p>
 
       {questions.map((q, i) => (
-        <div key={i} style={{ marginBottom: "20px" }}>
-          <p><strong>{q}</strong></p>
+
+        <div
+          key={i}
+          className="question-card"
+        >
+
+          <p className="question-text">
+            {q}
+          </p>
 
           <select
+            className="question-select"
             value={answers[i].score}
             onChange={(e) =>
-              handleScoreChange(i, parseInt(e.target.value))
+              handleScoreChange(
+                i,
+                parseInt(e.target.value)
+              )
             }
           >
-            <option value="">-- Pilih jawaban --</option>
+
+            <option value="">
+              -- Pilih jawaban --
+            </option>
+
             {options.map((opt, idx) => (
-              <option key={idx} value={opt.value}>
+              <option
+                key={idx}
+                value={opt.value}
+              >
                 {opt.label}
               </option>
             ))}
+
           </select>
 
-          <br />
-
           <input
+            className="question-input"
             placeholder="Tambahkan penjelasan (opsional)"
             value={answers[i].text}
-            onChange={(e) => handleTextChange(i, e.target.value)}
-            style={{ marginTop: "8px", width: "100%" }}
+            onChange={(e) =>
+              handleTextChange(
+                i,
+                e.target.value
+              )
+            }
           />
+
         </div>
       ))}
 
-      <button onClick={handleSubmit}>Submit</button>
+      <button
+        className="submit-button"
+        onClick={handleSubmit}
+      >
+        Submit Self Check
+      </button>
+
     </div>
   );
 }
