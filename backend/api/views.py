@@ -2,16 +2,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
+from .models import History
+
 import requests
 
-import sys
-import os
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(BASE_DIR)
-
-from .models import History
-from ml.predict import predict_multiple 
+# =========================
+# TRANSLATE FUNCTION
+# =========================
 
 def translate_text(text):
     try:
@@ -25,28 +23,70 @@ def translate_text(text):
             },
             timeout=5
         )
+
         return res.json().get("translatedText", text)
+
     except:
         return text
 
-class HomeView(APIView):
-    def get(self, request):
-        return Response({"message": "Welcome to Mental Health API"})
 
+# =========================
+# HUGGINGFACE API
+# =========================
+
+HF_API_URL = "https://murera-mental-health-nlp.hf.space/run/predict"
+
+
+def predict_multiple(answers):
+
+    response = requests.post(
+        HF_API_URL,
+        json={
+            "data": [answers]
+        },
+        timeout=60
+    )
+
+    result = response.json()
+
+    # ambil output gradio
+    return result["data"][0]
+
+
+# =========================
+# HOME
+# =========================
+
+class HomeView(APIView):
+
+    def get(self, request):
+        return Response({
+            "message": "Welcome to Mental Health API"
+        })
+
+
+# =========================
+# PREDICT
+# =========================
 
 class PredictMultiView(APIView):
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+
         answers = request.data.get("answers")
 
         if not answers or not isinstance(answers, list):
-            return Response({"error": "answers harus berupa list"}, status=400)
+            return Response(
+                {"error": "answers harus berupa list"},
+                status=400
+            )
 
-        #  PAKAI HYBRID ENGINE
+        # PREDICT VIA HF API
         result = predict_multiple(answers)
 
-        #  SIMPAN KE DATABASE
+        # SAVE HISTORY
         History.objects.create(
             user=request.user,
             answers=answers,
@@ -58,14 +98,24 @@ class PredictMultiView(APIView):
         return Response(result)
 
 
+# =========================
+# HISTORY
+# =========================
+
 class HistoryView(APIView):
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        data = History.objects.filter(user=request.user).order_by('-created_at')
+
+        data = History.objects.filter(
+            user=request.user
+        ).order_by('-created_at')
 
         result = []
+
         for item in data:
+
             result.append({
                 "answers": item.answers,
                 "score": item.total_score,
@@ -76,19 +126,32 @@ class HistoryView(APIView):
         return Response(result)
 
 
-class NewsView(APIView):
-    def get(self, request):
-        category = request.GET.get("category", "").lower()
+# =========================
+# NEWS
+# =========================
 
-        # mapping kategori → query
+class NewsView(APIView):
+
+    def get(self, request):
+
+        category = request.GET.get(
+            "category",
+            ""
+        ).lower()
+
+        # CATEGORY MAPPING
         if category == "minimal":
             query = "mental wellness tips OR self care habits"
+
         elif category == "mild":
             query = "stress management tips OR relaxation techniques"
+
         elif category == "moderate":
             query = "anxiety coping strategies OR mental health help"
+
         elif category == "severe":
             query = "depression help therapy support mental health recovery"
+
         else:
             query = "mental health tips"
 
@@ -103,28 +166,58 @@ class NewsView(APIView):
         }
 
         response = requests.get(url, params=params)
+
         data = response.json()
 
         keywords = [
-            "tips", "how", "guide", "therapy", "coping",
-            "help", "mental", "health", "stress", "anxiety"
+            "tips",
+            "how",
+            "guide",
+            "therapy",
+            "coping",
+            "help",
+            "mental",
+            "health",
+            "stress",
+            "anxiety"
         ]
 
         articles = []
 
         for article in data.get("articles", []):
-            title = (article.get("title") or "").lower()
-            desc = (article.get("description") or "").lower()
+
+            title = (
+                article.get("title") or ""
+            ).lower()
+
+            desc = (
+                article.get("description") or ""
+            ).lower()
+
             content = title + " " + desc
 
             # FILTER
             if any(k in content for k in keywords):
-                if any(bad in content for bad in ["trump", "court", "law", "government"]):
+
+                if any(
+                    bad in content
+                    for bad in [
+                        "trump",
+                        "court",
+                        "law",
+                        "government"
+                    ]
+                ):
                     continue
 
                 # TRANSLATE
-                title_id = translate_text(article.get("title") or "")
-                desc_id = translate_text(article.get("description") or "")
+                title_id = translate_text(
+                    article.get("title") or ""
+                )
+
+                desc_id = translate_text(
+                    article.get("description") or ""
+                )
 
                 articles.append({
                     "title": title_id,
@@ -133,9 +226,11 @@ class NewsView(APIView):
                     "image": article.get("urlToImage")
                 })
 
-        # fallback kalau kosong
+        # FALLBACK
         if len(articles) == 0:
+
             for article in data.get("articles", [])[:5]:
+
                 articles.append({
                     "title": article.get("title"),
                     "description": article.get("description"),
@@ -143,4 +238,6 @@ class NewsView(APIView):
                     "image": article.get("urlToImage")
                 })
 
-        return Response({"articles": articles[:5]})
+        return Response({
+            "articles": articles[:5]
+        })
