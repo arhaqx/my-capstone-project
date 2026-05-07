@@ -41,7 +41,7 @@ export default function Login() {
 
       <div className="auth-card">
 
-        <h1>Mental Health AI</h1>
+        <h1>Heal Space</h1>
 
         <p className="subtitle">
           Monitor your mental wellness safely
