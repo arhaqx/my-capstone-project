@@ -41,12 +41,15 @@ export default function History() {
     return "var(--primary)";
   };
 
-  const chartData = [...history].reverse().map(item => ({
-    date: new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-    score: item.score,
-    category: item.category,
-    fullDate: new Date(item.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
-  }));
+  const chartData = [...history].reverse().map(item => {
+    const d = new Date(item.created_at);
+    return {
+      uniqueLabel: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      score: item.score,
+      category: item.category,
+      fullDate: d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+  });
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -93,7 +96,15 @@ export default function History() {
                 <ResponsiveContainer>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                    <XAxis dataKey="date" stroke="var(--text-muted)" tick={{fill: 'var(--text-muted)'}} />
+                    <XAxis 
+                      dataKey="uniqueLabel" 
+                      stroke="var(--text-muted)" 
+                      tickFormatter={(val) => {
+                        const parts = val.split(' ');
+                        return parts.length >= 2 ? `${parts[0]} ${parts[1]}` : val;
+                      }}
+                      tick={{fill: 'var(--text-muted)'}} 
+                    />
                     <YAxis stroke="var(--text-muted)" tick={{fill: 'var(--text-muted)'}} domain={[0, 27]} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} activeDot={{ r: 8 }} />
