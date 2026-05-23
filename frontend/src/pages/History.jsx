@@ -19,6 +19,18 @@ export default function History() {
       });
   }, []);
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus riwayat ini?")) {
+      try {
+        await API.delete(`/history/${id}/`);
+        setHistory(history.filter((item) => item.id !== id));
+      } catch (err) {
+        console.error("Gagal menghapus", err);
+        alert("Gagal menghapus riwayat.");
+      }
+    }
+  };
+
   const getColor = (category) => {
     const catLower = (category || "").toLowerCase();
     if (catLower.includes("minimal") || catLower.includes("normal")) return "#10B981"; 
@@ -75,7 +87,13 @@ export default function History() {
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Skor Total</p>
-                  <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--text-main)" }}>{item.score}</p>
+                  <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--text-main)", marginBottom: "0.5rem" }}>{item.score}</p>
+                  <button 
+                    onClick={() => handleDelete(item.id)}
+                    style={{ background: "transparent", border: "none", color: "#EF4444", fontSize: "0.85rem", cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    Hapus
+                  </button>
                 </div>
               </div>
             ))}
