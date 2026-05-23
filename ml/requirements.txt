@@ -1,6 +1,0 @@
-torch
-transformers
-sentencepiece
-safetensors
-numpy
-gradio

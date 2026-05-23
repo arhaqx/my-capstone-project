@@ -1,169 +1,38 @@
+/* We will remove App.css and just use index.css or modular CSS where needed, but keeping this clean for now */
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #eef2ff;
-}
-
-.auth-container {
+.gradient-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
   height: 100vh;
+  z-index: -1;
+  background: radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.1), transparent 25%),
+              radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 25%);
+}
+
+.header {
+  padding: 1.5rem 2rem;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.auth-card {
-  background: white;
-  width: 380px;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-
-.auth-card h1 {
-  margin-bottom: 10px;
-  color: #4f46e5;
-}
-
-.subtitle {
-  color: gray;
-  margin-bottom: 25px;
-}
-
-.auth-input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-}
-
-.auth-button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #4f46e5;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.auth-button:hover {
-  background: #4338ca;
-}
-
-.auth-switch {
-  margin-top: 20px;
-  text-align: center;
-}
-
-.auth-switch a {
-  margin-left: 5px;
-  text-decoration: none;
-  color: #4f46e5;
-  font-weight: bold;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #eef2ff;
-}
-
-.question-container {
-  max-width: 800px;
-  margin: auto;
-  padding: 40px 20px;
-}
-
-.question-title {
-  text-align: center;
-  color: #4f46e5;
-  margin-bottom: 10px;
-}
-
-.question-subtitle {
-  text-align: center;
-  color: gray;
-  margin-bottom: 40px;
-}
-
-.question-card {
-  background: white;
-  padding: 24px;
-  margin-bottom: 20px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.question-text {
-  font-size: 18px;
-  margin-bottom: 15px;
-  font-weight: bold;
-}
-
-.question-select,
-.question-input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #4f46e5;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.submit-button:hover {
-  background: #4338ca;
+.header-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

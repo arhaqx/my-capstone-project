@@ -1,130 +1,151 @@
 import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 export default function Result() {
-  const data = JSON.parse(localStorage.getItem("result"));
+  const location = useLocation();
+  const navigate = useNavigate();
+  // Get data from location state or fallback to local storage if available
+  const resultData = location.state?.result || JSON.parse(localStorage.getItem("result"));
+  
   const [articles, setArticles] = useState([]);
+  const [loadingNews, setLoadingNews] = useState(true);
 
-  console.log("RESULT DATA:", data);
+  useEffect(() => {
+    if (resultData) {
+      localStorage.setItem("result", JSON.stringify(resultData));
+    }
+  }, [resultData]);
 
-    useEffect(() => {
-    if (!data?.category) return;
+  useEffect(() => {
+    if (!resultData?.category) {
+      setLoadingNews(false);
+      return;
+    }
 
-    API.get(`/news/?category=${data.category}`)
-        .then((res) => {
-        setArticles(res.data.articles);
-        })
-        .catch((err) => {
-        console.log(err);
-        });
-    }, [data?.category]);
+    setLoadingNews(true);
+    API.get(`/news/?category=${resultData.category}`)
+      .then((res) => {
+        setArticles(res.data.articles || []);
+      })
+      .catch((err) => {
+        console.error("Error fetching news:", err);
+      })
+      .finally(() => {
+        setLoadingNews(false);
+      });
+  }, [resultData?.category]);
 
-  if (!data) return <p>Tidak ada data</p>;
+  if (!resultData) {
+    return (
+      <div className="container animate-fade-in" style={{ textAlign: "center", marginTop: "4rem" }}>
+        <p style={{ color: "var(--text-muted)", marginBottom: "1rem" }}>Tidak ada data hasil tes yang ditemukan.</p>
+        <button onClick={() => navigate("/dashboard")} className="btn btn-primary">
+          Kembali ke Dashboard
+        </button>
+      </div>
+    );
+  }
 
   const getColor = (category) => {
-    switch (category) {
-      case "Minimal":
-        return "green";
-      case "Mild":
-        return "orange";
-      case "Moderate":
-        return "gold";
-      case "Severe":
-        return "red";
-      default:
-        return "black";
-    }
+    const catLower = (category || "").toLowerCase();
+    if (catLower.includes("minimal") || catLower.includes("normal")) return "#10B981"; // Emerald
+    if (catLower.includes("mild") || catLower.includes("ringan")) return "#F59E0B"; // Amber
+    if (catLower.includes("moderate") || catLower.includes("sedang")) return "#F97316"; // Orange
+    if (catLower.includes("severe") || catLower.includes("berat")) return "#EF4444"; // Red
+    return "var(--primary)";
   };
 
+  const scoreColor = getColor(resultData.category);
+
   return (
-    <div style={{ display: "flex", justifyContent: "center", marginTop: "50px" }}>
-      <div
-        style={{
-          border: "1px solid #ccc",
-          padding: "30px",
-          borderRadius: "10px",
-          width: "500px",
-          boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h2>Hasil Evaluasi</h2>
-
-        <h1 style={{ color: getColor(data.category) }}>
-          {data.category}
-        </h1>
-
-        <p><strong>Total Score:</strong> {data.total_score}</p>
-
-        <p style={{ marginTop: "10px" }}>
-          {data.interpretation}
-        </p>
-
-        {/* 🔥 DETAIL PER PERTANYAAN */}
-        <div style={{ marginTop: "20px" }}>
-          <h3>Detail Jawaban</h3>
-
-          {data.details.map((item, i) => (
-            <div
-              key={i}
-              style={{
-                borderTop: "1px solid #eee",
-                paddingTop: "10px",
-                marginTop: "10px",
-              }}
-            >
-              <p><strong>Pertanyaan {i + 1}</strong></p>
-              <p>Score: {item.score}</p>
-
-              {item.text && (
-                <p style={{ fontStyle: "italic" }}>
-                  "{item.text}"
-                </p>
-              )}
-
-              {/* 🔥 NLP INSIGHT */}
-              {item.nlp && (
-                <div style={{ fontSize: "12px", color: "gray" }}>
-                  <p>Negative: {item.nlp.probabilities.negative.toFixed(2)}</p>
-                  <p>Neutral: {item.nlp.probabilities.neutral.toFixed(2)}</p>
-                  <p>Positive: {item.nlp.probabilities.positive.toFixed(2)}</p>
-                </div>
-              )}
-            </div>
-          ))}
+    <div className="container animate-fade-in" style={{ paddingBottom: "4rem" }}>
+      <div className="glass-card" style={{ padding: "3rem", maxWidth: "800px", margin: "0 auto" }}>
+        
+        <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+          <h2 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Hasil Evaluasi Kesehatan Mental</h2>
+          <p style={{ color: "var(--text-muted)" }}>Berdasarkan analisis LLM terhadap tes PHQ-9 Anda</p>
         </div>
 
-        {/* 📰 ARTIKEL */}
-        <div style={{ marginTop: "20px" }}>
-          <h3>Rekomendasi Artikel</h3>
+        {/* Highlight Score & Category */}
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: "center", 
+          padding: "2rem", 
+          background: "var(--surface)", 
+          borderRadius: "var(--radius-xl)", 
+          boxShadow: "var(--shadow-md)",
+          border: `2px solid ${scoreColor}40`,
+          marginBottom: "2rem"
+        }}>
+          <h1 style={{ fontSize: "3rem", color: scoreColor, marginBottom: "0.5rem", textTransform: "capitalize" }}>
+            {resultData.category}
+          </h1>
+          <div style={{ fontSize: "1.25rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
+            Skor Total: <span style={{ fontWeight: "bold", color: "var(--text-main)" }}>{resultData.total_score}</span> / 27
+          </div>
+          <p style={{ textAlign: "center", fontSize: "1.1rem", lineHeight: "1.6", color: "var(--text-main)", maxWidth: "600px" }}>
+            {resultData.interpretation}
+          </p>
+        </div>
 
-          {articles.length === 0 ? (
-            <p>Loading artikel...</p>
+        {/* Artikel Relevan */}
+        <div style={{ marginBottom: "3rem" }}>
+          <h3 style={{ marginBottom: "1.5rem", color: "var(--text-main)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>📰</span> Rekomendasi Artikel
+          </h3>
+          
+          {loadingNews ? (
+            <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>Memuat artikel yang relevan...</p>
+          ) : articles.length === 0 ? (
+            <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>Tidak ada artikel relevan yang ditemukan saat ini.</p>
           ) : (
-            articles.map((a, i) => (
-              <div key={i} style={{ marginBottom: "10px" }}>
-                <a href={a.url} target="_blank" rel="noreferrer">
-                  <strong>{a.title}</strong>
+            <div style={{ display: "grid", gap: "1rem" }}>
+              {articles.map((article, idx) => (
+                <a 
+                  key={idx} 
+                  href={article.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    display: "block", 
+                    textDecoration: "none", 
+                    background: "var(--surface)", 
+                    padding: "1.5rem", 
+                    borderRadius: "var(--radius-lg)", 
+                    boxShadow: "var(--shadow-sm)",
+                    border: "1px solid var(--border)",
+                    transition: "transform 0.2s, box-shadow 0.2s"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "var(--shadow-md)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "var(--shadow-sm)"; }}
+                >
+                  <h4 style={{ color: "var(--primary)", marginBottom: "0.5rem" }}>{article.title}</h4>
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", lineHeight: "1.5" }}>{article.description}</p>
                 </a>
-                <p style={{ fontSize: "12px", color: "gray" }}>
-                  {a.description}
-                </p>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
 
-        {/* 🔥 BUTTON */}
-        <button
-          onClick={() => (window.location.href = "/dashboard")}
-          style={{ marginTop: "20px" }}
-        >
-          Cek Lagi
-        </button>
+        {/* Buttons */}
+        <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+          <button onClick={() => navigate("/dashboard")} className="btn btn-primary" style={{ flex: 1, maxWidth: "250px" }}>
+            Ke Dashboard
+          </button>
+          <button onClick={() => navigate("/history")} className="btn" style={{ flex: 1, maxWidth: "250px", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text-main)" }}>
+            Lihat Riwayat
+          </button>
+        </div>
 
-        {/* DISCLAIMER */}
-        <p style={{ fontSize: "12px", color: "gray", marginTop: "10px" }}>
-          *Hasil ini bukan diagnosis medis, silakan konsultasi dengan profesional.
-        </p>
+        {/* Disclaimer */}
+        <div style={{ marginTop: "2rem", padding: "1rem", background: "rgba(239, 68, 68, 0.1)", borderRadius: "var(--radius-md)", borderLeft: "4px solid #EF4444" }}>
+          <p style={{ fontSize: "0.9rem", color: "var(--text-main)", margin: 0 }}>
+            <strong>Disclaimer:</strong> Hasil analisis ini dihasilkan oleh AI (Large Language Model) dan metode asesmen mandiri. Ini <strong>bukanlah diagnosis medis atau psikologis resmi</strong>. Jika Anda merasa sangat tertekan atau memiliki pikiran untuk menyakiti diri sendiri, segera hubungi profesional kesehatan mental atau layanan darurat.
+          </p>
+        </div>
+
       </div>
     </div>
   );

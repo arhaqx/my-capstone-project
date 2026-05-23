@@ -1,42 +1,44 @@
+import { Link, useNavigate } from "react-router-dom";
+
 export default function Navbar() {
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/";
+    navigate("/login");
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        padding: "15px 30px",
-        backgroundColor: "#f5f5f5",
-        borderBottom: "1px solid #ddd",
-      }}
-    >
-      <div>
-        <strong>Mental Health App</strong>
-      </div>
+    <nav className="header">
+      <Link to="/dashboard" style={{ textDecoration: "none" }}>
+        <div className="header-brand">MindCare</div>
+      </Link>
 
-      <div>
-        <button onClick={() => (window.location.href = "/dashboard")}>
+      <div style={{ display: "flex", gap: "1rem" }}>
+        <button 
+          onClick={() => navigate("/dashboard")} 
+          className="btn" 
+          style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
+        >
           Dashboard
         </button>
 
-        <button
-          onClick={() => (window.location.href = "/history")}
-          style={{ marginLeft: "10px" }}
+        <button 
+          onClick={() => navigate("/history")} 
+          className="btn" 
+          style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
         >
-          History
+          Riwayat
         </button>
 
-        <button
-          onClick={handleLogout}
-          style={{ marginLeft: "10px" }}
+        <button 
+          onClick={handleLogout} 
+          className="btn btn-primary" 
+          style={{ padding: "0.5rem 1.5rem" }}
         >
           Logout
         </button>
       </div>
-    </div>
+    </nav>
   );
 }

@@ -5,7 +5,7 @@ from django.conf import settings
 from .models import History
 
 import requests
-
+import json
 
 # =========================
 # TRANSLATE FUNCTION
@@ -31,26 +31,72 @@ def translate_text(text):
 
 
 # =========================
-# HUGGINGFACE API
+# OPENROUTER API
 # =========================
 
-HF_API_URL = "https://murera-mental-health-nlp.hf.space/run/predict"
-
+OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 def predict_multiple(answers):
+    system_prompt = """You are a mental health analysis assistant. You will be given a list of answers. Each answer has a 'score' (0-3) and a 'text' (user's input).
+You must analyze the inputs and return a strictly formatted JSON object with the following structure, without any markdown formatting or extra text:
+{
+    "total_score": int,
+    "average_score": float,
+    "category": string (one of "Minimal", "Mild", "Moderate", "Severe"),
+    "interpretation": string,
+    "details": [
+        {
+            "question_index": int,
+            "score": int,
+            "text": string,
+            "nlp": {
+                "phq_score": int (0-3),
+                "probabilities": { "negative": float, "neutral": float, "positive": float }
+            }
+        }
+    ]
+}
 
-    response = requests.post(
-        HF_API_URL,
-        json={
-            "data": [answers]
-        },
-        timeout=60
-    )
+Rules for scoring:
+1. sum the 'score' of all answers to get `total_score`.
+2. `average_score` is `total_score` / number of answers.
+3. `category` is determined by `total_score`: <= 3 is "Minimal", <= 6 is "Mild", <= 9 is "Moderate", > 9 is "Severe".
+4. `interpretation`: "Minimal": "Kondisi mental dalam batas normal.", "Mild": "Terdapat gejala ringan, disarankan menjaga pola hidup sehat.", "Moderate": "Perlu perhatian lebih terhadap kesehatan mental.", "Severe": "Segera cari bantuan profesional."
+5. For each answer, fill the `details` array. Synthesize an `nlp` analysis where you estimate sentiment probabilities (sum to 1.0) and a `phq_score` (0-3) based on the text provided.
+"""
 
-    result = response.json()
+    headers = {
+        "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+        "Content-Type": "application/json"
+    }
 
-    # ambil output gradio
-    return result["data"][0]
+    payload = {
+        "model": "anthropic/claude-3.7-sonnet",
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": json.dumps(answers)}
+        ]
+    }
+
+    try:
+        response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=60)
+        response.raise_for_status()
+        res_json = response.json()
+        content = res_json['choices'][0]['message']['content']
+        
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            content = content.replace("```json", "").replace("```", "").strip()
+            return json.loads(content)
+            
+    except Exception as e:
+        return {
+            "total_score": 0,
+            "category": "Error",
+            "details": [],
+            "error": str(e)
+        }
 
 
 # =========================
