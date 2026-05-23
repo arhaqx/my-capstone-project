@@ -6,12 +6,14 @@ import Test from "./pages/Test";
 import Result from "./pages/Result";
 import History from "./pages/History";
 import ProtectedRoute from "./components/ProtectedRoute";
+import EmergencyButton from "./components/EmergencyButton";
 
 function App() {
   return (
     <BrowserRouter>
       <div className="App">
         <div className="gradient-bg"></div>
+        <EmergencyButton />
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
