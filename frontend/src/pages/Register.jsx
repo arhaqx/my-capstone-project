@@ -47,7 +47,7 @@ function Register() {
         
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
           <h1 style={{ color: "var(--primary)", fontSize: "2rem", marginBottom: "0.5rem" }}>Buat Akun</h1>
-          <p style={{ color: "var(--text-muted)" }}>Bergabunglah dengan MindCare hari ini.</p>
+          <p style={{ color: "var(--text-muted)" }}>Bergabunglah dengan HealSpace hari ini.</p>
         </div>
 
         {errorMsg && (

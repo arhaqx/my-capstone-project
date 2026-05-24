@@ -71,7 +71,7 @@ Rules for scoring:
     }
 
     payload = {
-        "model": "anthropic/claude-3.7-sonnet",
+        "model": "anthropic/claude-3-haiku",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": json.dumps(answers)}
@@ -91,11 +91,20 @@ Rules for scoring:
             return json.loads(content)
             
     except Exception as e:
+        error_details = str(e)
+        try:
+            if 'response' in locals() and hasattr(response, 'text'):
+                error_details += f" | {response.text}"
+        except:
+            pass
+            
+        print(f"========== OPENROUTER ERROR ==========\n{error_details}\n======================================")
+        
         return {
             "total_score": 0,
             "category": "Error",
             "details": [],
-            "error": str(e)
+            "error": error_details
         }
 
 
@@ -188,102 +197,133 @@ class NewsView(APIView):
         # CATEGORY MAPPING
         if category == "minimal":
             query = "mental wellness tips OR self care habits"
-
         elif category == "mild":
             query = "stress management tips OR relaxation techniques"
-
         elif category == "moderate":
             query = "anxiety coping strategies OR mental health help"
-
         elif category == "severe":
             query = "depression help therapy support mental health recovery"
-
         else:
             query = "mental health tips"
 
         url = "https://newsapi.org/v2/everything"
-
         params = {
             "q": query,
             "language": "en",
             "sortBy": "relevancy",
-            "pageSize": 10,
+            "pageSize": 15,
             "apiKey": settings.NEWS_API_KEY
         }
 
-        response = requests.get(url, params=params)
+        try:
+            response = requests.get(url, params=params, timeout=10)
+            data = response.json()
+        except:
+            return Response({"articles": []})
 
-        data = response.json()
+        raw_articles = data.get("articles", [])
+        
+        # 1. RULE-BASED FILTERING
+        filtered_articles = []
+        for article in raw_articles:
+            title = article.get("title")
+            desc = article.get("description")
+            url_link = article.get("url")
+            
+            if not title or not desc or not url_link:
+                continue
+                
+            if title == "[Removed]" or desc == "[Removed]":
+                continue
+                
+            if len(desc) < 30:
+                continue
+                
+            # Filter out negative keywords just in case
+            content = (title + " " + desc).lower()
+            if any(bad in content for bad in ["trump", "court", "law", "government", "celebrity"]):
+                continue
+                
+            filtered_articles.append(article)
+            
+        if not filtered_articles:
+            return Response({"articles": []})
 
-        keywords = [
-            "tips",
-            "how",
-            "guide",
-            "therapy",
-            "coping",
-            "help",
-            "mental",
-            "health",
-            "stress",
-            "anxiety"
-        ]
+        # Limit to top 10 for LLM processing to save cost and time
+        articles_to_evaluate = filtered_articles[:10]
+        
+        # 2. LLM SEMANTIC FILTERING
+        llm_prompt = ""
+        for idx, article in enumerate(articles_to_evaluate):
+            llm_prompt += f"ID: {idx}\nTitle: {article.get('title')}\nDescription: {article.get('description')}\n\n"
 
-        articles = []
+        system_prompt = (
+            "You are a mental health news curator for a university student self-check app. "
+            "Evaluate the semantic relevance of the following articles. "
+            "Select ONLY the articles that are genuinely relevant, supportive, and safe for mental health. "
+            "Reject clickbait, celebrity gossip, or overly generic news. "
+            "Return ONLY a JSON array of the IDs of the relevant articles, e.g., [0, 2, 3]. "
+            "If none are relevant, return []."
+        )
 
-        for article in data.get("articles", []):
+        headers = {
+            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+            "HTTP-Referer": "http://localhost:8000",
+            "X-Title": "Mental Health App",
+            "Content-Type": "application/json"
+        }
 
-            title = (
-                article.get("title") or ""
-            ).lower()
+        payload = {
+            "model": "anthropic/claude-3-haiku",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": llm_prompt}
+            ]
+        }
+        
+        selected_indices = []
+        
+        try:
+            llm_res = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=20)
+            if llm_res.status_code == 200:
+                llm_data = llm_res.json()
+                llm_text = llm_data["choices"][0]["message"]["content"]
+                
+                # Extract JSON array from text
+                import re
+                match = re.search(r'\[.*?\]', llm_text, re.DOTALL)
+                if match:
+                    selected_indices = json.loads(match.group())
+        except Exception as e:
+            print("LLM Filtering Error:", e)
+            pass
 
-            desc = (
-                article.get("description") or ""
-            ).lower()
+        # 3. APPLY SELECTION & FALLBACK
+        final_articles = []
+        if isinstance(selected_indices, list) and len(selected_indices) > 0:
+            for idx in selected_indices:
+                if isinstance(idx, int) and 0 <= idx < len(articles_to_evaluate):
+                    final_articles.append(articles_to_evaluate[idx])
+        else:
+            # Fallback to top 5 if LLM fails or returns empty
+            final_articles = articles_to_evaluate[:5]
+            
+        # Limit to 5 max
+        final_articles = final_articles[:5]
 
-            content = title + " " + desc
-
-            # FILTER
-            if any(k in content for k in keywords):
-
-                if any(
-                    bad in content
-                    for bad in [
-                        "trump",
-                        "court",
-                        "law",
-                        "government"
-                    ]
-                ):
-                    continue
-
-                # TRANSLATE
-                title_id = translate_text(
-                    article.get("title") or ""
-                )
-
-                desc_id = translate_text(
-                    article.get("description") or ""
-                )
-
-                articles.append({
-                    "title": title_id,
-                    "description": desc_id,
-                    "url": article.get("url"),
-                    "image": article.get("urlToImage")
-                })
-
-        # FALLBACK
-        if len(articles) == 0:
-
-            for article in data.get("articles", [])[:5]:
-
-                articles.append({
-                    "title": article.get("title"),
-                    "description": article.get("description"),
-                    "url": article.get("url"),
-                    "image": article.get("urlToImage")
-                })
+        # TRANSLATE
+        result_articles = []
+        for article in final_articles:
+            title_id = translate_text(article.get("title") or "")
+            desc_id = translate_text(article.get("description") or "")
+            
+            result_articles.append({
+                "title": title_id,
+                "description": desc_id,
+                "url": article.get("url"),
+                "image": article.get("urlToImage")
+            })
 
         return Response({
-            "articles": articles[:5]
+            "articles": result_articles
         })

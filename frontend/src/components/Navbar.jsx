@@ -11,7 +11,7 @@ export default function Navbar() {
   return (
     <nav className="header">
       <Link to="/dashboard" style={{ textDecoration: "none" }}>
-        <div className="header-brand">MindCare</div>
+        <div className="header-brand">HealSpace</div>
       </Link>
 
       <div style={{ display: "flex", gap: "1rem" }}>

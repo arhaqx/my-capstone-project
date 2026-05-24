@@ -23,7 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+env_path = BASE_DIR / '.env'
+load_dotenv(env_path)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
@@ -33,6 +34,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "capstonefullstackb11-production.up.railway.app",
+    "127.0.0.1",
+    "localhost",
 ]
 
 
@@ -89,7 +92,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(BASE_DIR / '.env')
 
 DATABASES = {
     'default': {

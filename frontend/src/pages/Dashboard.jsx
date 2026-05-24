@@ -13,7 +13,7 @@ export default function Dashboard() {
         <div className="glass-card" style={{ padding: "3rem", marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h1 style={{ color: "var(--primary)", marginBottom: "1rem", fontSize: "2.5rem" }}>
-              Selamat Datang di MindCare
+              Selamat Datang di HealSpace
             </h1>
             <p style={{ color: "var(--text-muted)", fontSize: "1.1rem", maxWidth: "600px", lineHeight: "1.6" }}>
               Kami menyediakan alat bantu asesmen mandiri berbasis AI untuk memantau kesehatan mental Anda. Mulai evaluasi Anda sekarang untuk mendapatkan analisis dan rekomendasi yang dipersonalisasi.
@@ -25,7 +25,7 @@ export default function Dashboard() {
               className="btn btn-primary" 
               style={{ fontSize: "1.2rem", padding: "1rem 2rem", borderRadius: "var(--radius-xl)" }}
             >
-              Mulai Asesmen PHQ-9
+              Mulai Asesmen
             </button>
           </div>
         </div>

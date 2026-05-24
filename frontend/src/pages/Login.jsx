@@ -34,7 +34,7 @@ export default function Login() {
       <div className="glass-card animate-fade-in" style={{ width: "100%", maxWidth: "420px", padding: "3rem 2.5rem" }}>
         
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <h1 style={{ color: "var(--primary)", fontSize: "2rem", marginBottom: "0.5rem" }}>MindCare</h1>
+          <h1 style={{ color: "var(--primary)", fontSize: "2rem", marginBottom: "0.5rem" }}>HealSpace</h1>
           <p style={{ color: "var(--text-muted)" }}>Selamat datang kembali! Silakan login untuk melanjutkan.</p>
         </div>
 

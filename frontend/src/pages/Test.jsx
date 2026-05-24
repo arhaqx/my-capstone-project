@@ -17,13 +17,13 @@ const phq9Questions = [
 const options = [
   { label: "Tidak Pernah", value: 0 },
   { label: "Beberapa Hari", value: 1 },
-  { label: "Lebih dari Setengah Hari", value: 2 },
+  { label: "Sering", value: 2 },
   { label: "Hampir Setiap Hari", value: 3 }
 ];
 
 const Test = () => {
   const navigate = useNavigate();
-  const [answers, setAnswers] = useState(Array(9).fill(0));
+  const [answers, setAnswers] = useState(Array(9).fill(""));
   const [loading, setLoading] = useState(false);
 
   const handleSelect = (index, value) => {
@@ -34,6 +34,12 @@ const Test = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (answers.includes("")) {
+      alert("Harap isi semua pertanyaan sebelum mengirimkan asesmen.");
+      return;
+    }
+
     setLoading(true);
 
     const formattedAnswers = answers.map((score, index) => ({
@@ -76,6 +82,7 @@ const Test = () => {
                 value={answers[index]}
                 onChange={(e) => handleSelect(index, e.target.value)}
               >
+                <option value="" disabled>-- Pilih Jawaban --</option>
                 {options.map((opt) => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
