@@ -31,7 +31,7 @@ export default function Dashboard() {
         </div>
 
         {/* Feature Cards Section */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
           <div 
             className="glass-card" 
             style={{ padding: "2rem", cursor: "pointer", transition: "transform 0.2s" }}
@@ -54,6 +54,18 @@ export default function Dashboard() {
             <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🧠</div>
             <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Analisis AI</h3>
             <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Dapatkan wawasan mendalam (Natural Language Processing) dan rekomendasi bacaan berdasarkan kondisi Anda saat ini.</p>
+          </div>
+
+          <div 
+            className="glass-card" 
+            style={{ padding: "2rem", cursor: "pointer", transition: "transform 0.2s" }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px)"}
+            onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
+            onClick={() => navigate("/breathing")}
+          >
+            <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🌬️</div>
+            <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Relaksasi</h3>
+            <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Lakukan latihan pernapasan interaktif untuk meredakan stres, panik, dan kecemasan secara instan.</p>
           </div>
         </div>
 
