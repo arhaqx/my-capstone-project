@@ -1,14 +1,22 @@
 import { useState, useRef, useEffect } from "react";
 import API from "../services/api";
 import Navbar from "../components/Navbar";
+import { useSettings } from "../contexts/SettingsContext";
 
 export default function Chat() {
+  const { t, language } = useSettings();
   const [messages, setMessages] = useState([
-    { role: "model", text: "Halo! Saya MindCare AI. Ada yang ingin kamu ceritakan atau keluhkan hari ini? Saya di sini siap mendengarkan." }
+    { role: "model", text: t("chatGreeting") }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (messages.length === 1 && messages[0].role === "model") {
+      setMessages([{ role: "model", text: t("chatGreeting") }]);
+    }
+  }, [language, t, messages.length]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,11 +38,11 @@ export default function Chat() {
     setIsLoading(true);
 
     try {
-      const res = await API.post("/chat/", { messages: newMessages });
+      const res = await API.post("/chat/", { messages: newMessages, language });
       setMessages([...newMessages, res.data]);
     } catch (err) {
       console.error(err);
-      setMessages([...newMessages, { role: "model", text: "Maaf, terjadi kesalahan saat menghubungi server. Mohon coba beberapa saat lagi." }]);
+      setMessages([...newMessages, { role: "model", text: t("chatError") }]);
     } finally {
       setIsLoading(false);
     }
@@ -46,8 +54,8 @@ export default function Chat() {
       <div className="container animate-fade-in" style={{ paddingBottom: "4rem", height: "calc(100vh - 80px)", display: "flex", flexDirection: "column" }}>
         
         <div style={{ marginBottom: "1rem" }}>
-          <h1 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Konseling AI</h1>
-          <p style={{ color: "var(--text-muted)" }}>Teman curhat virtual yang siap mendengarkan 24/7 tanpa menghakimi.</p>
+          <h1 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>{t("chatTitle")}</h1>
+          <p style={{ color: "var(--text-muted)" }}>{t("chatDesc")}</p>
         </div>
 
         <div className="glass-card" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -68,7 +76,7 @@ export default function Chat() {
                     borderRadius: "1.5rem",
                     borderBottomRightRadius: msg.role === "user" ? "0.25rem" : "1.5rem",
                     borderBottomLeftRadius: msg.role === "model" ? "0.25rem" : "1.5rem",
-                    backgroundColor: msg.role === "user" ? "var(--primary)" : "#F1F5F9",
+                    backgroundColor: msg.role === "user" ? "var(--primary)" : "var(--chat-bubble-bg)",
                     color: msg.role === "user" ? "white" : "var(--text-main)",
                     boxShadow: "var(--shadow-sm)",
                     lineHeight: 1.5,
@@ -81,21 +89,21 @@ export default function Chat() {
             ))}
             {isLoading && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{ padding: "1rem 1.5rem", borderRadius: "1.5rem", backgroundColor: "#F1F5F9", color: "var(--text-muted)", display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                  <div className="dot-pulse"></div> MindCare AI sedang mengetik...
+                <div style={{ padding: "1rem 1.5rem", borderRadius: "1.5rem", backgroundColor: "var(--chat-bubble-bg)", color: "var(--text-muted)", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                  <div className="dot-pulse"></div> {t("chatTyping")}
                 </div>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          <div style={{ padding: "1rem", borderTop: "1px solid var(--border)", background: "rgba(255,255,255,0.5)" }}>
+          <div style={{ padding: "1rem", borderTop: "1px solid var(--border)", background: "var(--chat-input-bg)" }}>
             <form onSubmit={handleSend} style={{ display: "flex", gap: "0.5rem" }}>
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ketik pesan Anda di sini..."
+                placeholder={t("chatPlaceholder")}
                 disabled={isLoading}
                 style={{
                   flex: 1,
@@ -104,7 +112,9 @@ export default function Chat() {
                   border: "1px solid var(--border)",
                   outline: "none",
                   fontSize: "1rem",
-                  fontFamily: "inherit"
+                  fontFamily: "inherit",
+                  backgroundColor: "var(--chat-input)",
+                  color: "var(--text-main)"
                 }}
               />
               <button 
@@ -113,7 +123,7 @@ export default function Chat() {
                 className="btn btn-primary"
                 style={{ borderRadius: "2rem", padding: "0 1.5rem" }}
               >
-                Kirim
+                {t("chatSend")}
               </button>
             </form>
           </div>

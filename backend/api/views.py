@@ -359,9 +359,12 @@ class ChatView(APIView):
 
             genai.configure(api_key=settings.GEMINI_API_KEY)
             
-            system_prompt = """You are 'MindCare AI', an empathetic, non-judgmental mental health companion and virtual listener. 
+            language = request.data.get("language", "id")
+            communication_style = "Indonesian" if language == "id" else "English"
+            
+            system_prompt = f"""You are 'MindCare AI', an empathetic, non-judgmental mental health companion and virtual listener. 
 Your goal is to provide emotional support, listen actively, and use light Cognitive Behavioral Therapy (CBT) techniques.
-You communicate in friendly, comforting Indonesian.
+You communicate in friendly, comforting {communication_style}.
 CRITICAL RULE: If the user indicates severe depression, self-harm, or suicidal thoughts, you MUST gently but firmly advise them to seek professional medical help immediately and mention that they can use the Panic/Emergency Button in this app to contact 'Layanan Sejiwa (119 ext 8)'. Keep your responses relatively short, conversational, and warm."""
 
             model = genai.GenerativeModel(
@@ -377,6 +380,10 @@ CRITICAL RULE: If the user indicates severe depression, self-harm, or suicidal t
                     "role": role,
                     "parts": [msg.get("text", "")]
                 })
+                
+            # Gemini strictly requires the first message in the history to be from 'user'
+            if contents and contents[0]["role"] == "model":
+                contents.pop(0)
 
             response = model.generate_content(contents)
             

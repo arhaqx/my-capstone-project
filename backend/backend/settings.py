@@ -28,6 +28,7 @@ load_dotenv(env_path)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +38,8 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
 ]
+
+#capstonefullstackb11-production.up.railway.app
 
 
 # Application definition
@@ -102,7 +105,7 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': os.getenv('DB_HOST'),
         'PORT': os.getenv('DB_PORT'),
-        'OPTIONS': {'sslmode': 'require'},
+        'OPTIONS': {'sslmode': 'disable',},
     }
 }
 
