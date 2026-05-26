@@ -8,6 +8,8 @@ export default function Navbar() {
     navigate("/login");
   };
 
+
+
   return (
     <nav className="header">
       <Link to="/dashboard" style={{ textDecoration: "none" }}>
@@ -15,25 +17,41 @@ export default function Navbar() {
       </Link>
 
       <div style={{ display: "flex", gap: "1rem" }}>
-        <button 
-          onClick={() => navigate("/dashboard")} 
-          className="btn" 
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="btn"
           style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
         >
           Dashboard
         </button>
 
-        <button 
-          onClick={() => navigate("/history")} 
-          className="btn" 
+        <button
+          onClick={() => navigate("/history")}
+          className="btn"
           style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
         >
           Riwayat
         </button>
 
-        <button 
-          onClick={handleLogout} 
-          className="btn btn-primary" 
+        <button
+          onClick={() => navigate("/chat")}
+          className="btn"
+          style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
+        >
+          Konseling AI
+        </button>
+
+        <button
+          onClick={() => navigate("/breathing")}
+          className="btn"
+          style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
+        >
+          Relaksasi
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="btn btn-primary"
           style={{ padding: "0.5rem 1.5rem" }}
         >
           Logout

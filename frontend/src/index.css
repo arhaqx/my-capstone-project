@@ -108,3 +108,48 @@ code {
   cursor: not-allowed;
   transform: none;
 }
+
+/* Header Styles */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: -0.025em;
+}
+
+/* Breathing Animations */
+.breathe-circle {
+  transition: transform 4s ease-in-out;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 40px rgba(79, 70, 229, 0.4);
+}
+
+.breathe-circle.inhale {
+  transform: scale(1.5);
+  background: linear-gradient(135deg, #60A5FA, #3B82F6);
+}
+
+.breathe-circle.hold {
+  transform: scale(1.5);
+  background: linear-gradient(135deg, #34D399, #10B981);
+}
+
+.breathe-circle.exhale {
+  transform: scale(1);
+  background: linear-gradient(135deg, #F472B6, #EC4899);
+}
