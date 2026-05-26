@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import API from "../services/api";
 import Navbar from "../components/Navbar";
 
@@ -19,6 +20,18 @@ export default function History() {
       });
   }, []);
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Apakah Anda yakin ingin menghapus riwayat ini?")) {
+      try {
+        await API.delete(`/history/${id}/`);
+        setHistory(history.filter((item) => item.id !== id));
+      } catch (err) {
+        console.error("Gagal menghapus", err);
+        alert("Gagal menghapus riwayat.");
+      }
+    }
+  };
+
   const getColor = (category) => {
     const catLower = (category || "").toLowerCase();
     if (catLower.includes("minimal") || catLower.includes("normal")) return "#10B981"; 
@@ -26,6 +39,30 @@ export default function History() {
     if (catLower.includes("moderate") || catLower.includes("sedang")) return "#F97316"; 
     if (catLower.includes("severe") || catLower.includes("berat")) return "#EF4444"; 
     return "var(--primary)";
+  };
+
+  const chartData = [...history].reverse().map(item => {
+    const d = new Date(item.created_at);
+    return {
+      uniqueLabel: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      score: item.score,
+      category: item.category,
+      fullDate: d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    };
+  });
+
+  const CustomTooltip = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="glass-card" style={{ padding: "1rem", border: `2px solid ${getColor(data.category)}` }}>
+          <p style={{ margin: 0, fontWeight: "bold", color: "var(--text-main)" }}>{data.fullDate}</p>
+          <p style={{ margin: "0.5rem 0 0", color: getColor(data.category) }}>Kategori: <span style={{textTransform: "capitalize"}}>{data.category}</span></p>
+          <p style={{ margin: 0, fontWeight: "bold", fontSize: "1.2rem", color: "var(--text-main)" }}>Skor: {data.score}</p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -52,8 +89,32 @@ export default function History() {
             </button>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: "1.5rem" }}>
-            {history.map((item, i) => (
+          <>
+            <div className="glass-card" style={{ padding: "2rem", marginBottom: "2rem" }}>
+              <h3 style={{ color: "var(--text-main)", marginBottom: "1.5rem" }}>Grafik Skor PHQ-9</h3>
+              <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                  <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                    <XAxis 
+                      dataKey="uniqueLabel" 
+                      stroke="var(--text-muted)" 
+                      tickFormatter={(val) => {
+                        const parts = val.split(' ');
+                        return parts.length >= 2 ? `${parts[0]} ${parts[1]}` : val;
+                      }}
+                      tick={{fill: 'var(--text-muted)'}} 
+                    />
+                    <YAxis stroke="var(--text-muted)" tick={{fill: 'var(--text-muted)'}} domain={[0, 27]} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} activeDot={{ r: 8 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: "1.5rem" }}>
+              {history.map((item, i) => (
               <div
                 key={i}
                 className="glass-card"
@@ -75,11 +136,18 @@ export default function History() {
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Skor Total</p>
-                  <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--text-main)" }}>{item.score}</p>
+                  <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--text-main)", marginBottom: "0.5rem" }}>{item.score}</p>
+                  <button 
+                    onClick={() => handleDelete(item.id)}
+                    style={{ background: "transparent", border: "none", color: "#EF4444", fontSize: "0.85rem", cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    Hapus
+                  </button>
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </div>
     </>
