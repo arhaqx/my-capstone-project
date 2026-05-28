@@ -43,3 +43,5 @@ httplib2==0.31.2
 uritemplate==4.2.0
 pyparsing==3.3.2
 tqdm==4.67.3
+
+whitenoise==6.12.0
