@@ -55,7 +55,8 @@ const Test = () => {
       navigate("/result", { state: { result: response.data } });
     } catch (error) {
       console.error("Error submitting test:", error);
-      alert("Terjadi kesalahan saat memproses tes. Silakan coba lagi.");
+      const backendError = error.response?.data?.error;
+      alert(backendError ? `Terjadi kesalahan: ${backendError}` : "Terjadi kesalahan saat memproses tes. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }

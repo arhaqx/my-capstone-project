@@ -127,34 +127,36 @@ class PredictMultiView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        try:
+            answers = request.data.get("answers")
 
-        answers = request.data.get("answers")
+            if not answers or not isinstance(answers, list):
+                return Response(
+                    {"error": "answers harus berupa list"},
+                    status=400
+                )
 
-        if not answers or not isinstance(answers, list):
-            return Response(
-                {"error": "answers harus berupa list"},
-                status=400
+            # PREDICT VIA HF API / GEMINI
+            result = predict_multiple(answers)
+
+            if result.get("category") == "Error":
+                return Response(
+                    {"error": result.get("error", "Gagal memproses dengan AI")},
+                    status=500
+                )
+
+            # SAVE HISTORY
+            History.objects.create(
+                user=request.user,
+                answers=answers,
+                total_score=result.get("total_score"),
+                category=result.get("category"),
+                result_detail=result.get("details")
             )
 
-        # PREDICT VIA HF API / GEMINI
-        result = predict_multiple(answers)
-
-        if result.get("category") == "Error":
-            return Response(
-                {"error": result.get("error", "Gagal memproses dengan AI")},
-                status=500
-            )
-
-        # SAVE HISTORY
-        History.objects.create(
-            user=request.user,
-            answers=answers,
-            total_score=result.get("total_score"),
-            category=result.get("category"),
-            result_detail=result.get("details")
-        )
-
-        return Response(result)
+            return Response(result)
+        except Exception as e:
+            return Response({"error": f"Internal Server Error: {str(e)}"}, status=500)
 
 
 # =========================
@@ -198,6 +200,67 @@ class HistoryView(APIView):
 
 class NewsView(APIView):
 
+    def get_fallback_articles(self, category):
+        fallbacks = {
+            "minimal": [
+                {
+                    "title": "10 Kebiasaan Sehari-hari untuk Kesehatan Mental yang Lebih Baik",
+                    "description": "Temukan kebiasaan sehari-hari sederhana yang dapat secara signifikan meningkatkan suasana hati dan kesejahteraan mental Anda.",
+                    "url": "https://www.mentalhealth.org.uk/explore-mental-health/publications/our-best-mental-health-tips",
+                    "image": "https://images.unsplash.com/photo-1499209974431-9dddcece7f88?q=80&w=600&auto=format&fit=crop"
+                },
+                {
+                    "title": "Kekuatan Mindfulness dalam Aktivitas Sehari-hari",
+                    "description": "Pelajari bagaimana melatih mindfulness dapat membantu Anda tetap tenang dan mengurangi stres.",
+                    "url": "https://www.mindful.org/meditation/mindfulness-getting-started/",
+                    "image": "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=600&auto=format&fit=crop"
+                }
+            ],
+            "mild": [
+                {
+                    "title": "Cara Efektif Mengelola Stres dan Kecemasan Ringan",
+                    "description": "Teknik-teknik efektif untuk mengatasi stres dan kecemasan ringan dalam kehidupan sehari-hari.",
+                    "url": "https://www.apa.org/topics/stress/tips",
+                    "image": "https://images.unsplash.com/photo-1545205597-3d9d02c29597?q=80&w=600&auto=format&fit=crop"
+                },
+                {
+                    "title": "Teknik Relaksasi Sederhana untuk Pereda Stres",
+                    "description": "Jelajahi berbagai metode relaksasi termasuk pernapasan dalam dan relaksasi otot progresif.",
+                    "url": "https://www.helpguide.org/articles/stress/relaxation-techniques-for-stress-relief.htm",
+                    "image": "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=600&auto=format&fit=crop"
+                }
+            ],
+            "moderate": [
+                {
+                    "title": "Strategi Bertahan Menghadapi Gejala Depresi Menengah",
+                    "description": "Mekanisme koping yang praktis untuk menghadapi kecemasan sedang dan gejala depresi.",
+                    "url": "https://adaa.org/tips",
+                    "image": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=600&auto=format&fit=crop"
+                },
+                {
+                    "title": "Kapan Waktu yang Tepat untuk Mencari Bantuan Profesional?",
+                    "description": "Memahami tanda-tanda yang mengindikasikan bahwa sudah saatnya untuk menghubungi profesional.",
+                    "url": "https://www.nami.org/About-Mental-Illness/Warning-Signs-and-Symptoms",
+                    "image": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop"
+                }
+            ],
+            "severe": [
+                {
+                    "title": "Bantuan Segera untuk Krisis Kesehatan Mental",
+                    "description": "Sumber daya dan langkah-langkah yang harus diambil jika Anda mengalami keadaan darurat kesehatan mental.",
+                    "url": "https://www.samhsa.gov/find-help/national-helpline",
+                    "image": "https://images.unsplash.com/photo-1527137342181-19aab11a8ee8?q=80&w=600&auto=format&fit=crop"
+                },
+                {
+                    "title": "Memahami dan Mengatasi Depresi Berat",
+                    "description": "Panduan komprehensif untuk memahami depresi berat dan menemukan jalur perawatan yang tepat.",
+                    "url": "https://www.psychiatry.org/patients-families/depression/what-is-depression",
+                    "image": "https://images.unsplash.com/photo-1493836512294-502baa1986e2?q=80&w=600&auto=format&fit=crop"
+                }
+            ]
+        }
+        return fallbacks.get(category, fallbacks["minimal"])
+
     def get(self, request):
 
         category = request.GET.get(
@@ -227,10 +290,14 @@ class NewsView(APIView):
         }
 
         try:
+            if not settings.NEWS_API_KEY:
+                raise Exception("Missing API Key")
             response = requests.get(url, params=params, timeout=10)
             data = response.json()
+            if data.get("status") == "error":
+                raise Exception("NewsAPI Error")
         except:
-            return Response({"articles": []})
+            return Response({"articles": self.get_fallback_articles(category)})
 
         raw_articles = data.get("articles", [])
         
@@ -258,7 +325,7 @@ class NewsView(APIView):
             filtered_articles.append(article)
             
         if not filtered_articles:
-            return Response({"articles": []})
+            return Response({"articles": self.get_fallback_articles(category)})
 
         # Limit to top 10 for LLM processing to save cost and time
         articles_to_evaluate = filtered_articles[:10]
@@ -277,8 +344,10 @@ class NewsView(APIView):
             "If none are relevant, return []."
         )
 
+        openrouter_key = getattr(settings, "OPENROUTER_API_KEY", None)
+        
         headers = {
-            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+            "Authorization": f"Bearer {openrouter_key}",
             "HTTP-Referer": "http://localhost:8000",
             "X-Title": "Mental Health App",
             "Content-Type": "application/json"
