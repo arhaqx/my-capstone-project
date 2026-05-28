@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import API from "../services/api";
 import Navbar from "../components/Navbar";
+import { useSettings } from "../contexts/SettingsContext";
 
 export default function History() {
+  const { t, language } = useSettings();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,13 +23,13 @@ export default function History() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus riwayat ini?")) {
+    if (window.confirm(t("histConfirmDelete"))) {
       try {
         await API.delete(`/history/${id}/`);
         setHistory(history.filter((item) => item.id !== id));
       } catch (err) {
-        console.error("Gagal menghapus", err);
-        alert("Gagal menghapus riwayat.");
+        console.error("Failed to delete", err);
+        alert(t("histDeleteFail"));
       }
     }
   };
@@ -43,11 +45,12 @@ export default function History() {
 
   const chartData = [...history].reverse().map(item => {
     const d = new Date(item.created_at);
+    const loc = language === 'id' ? 'id-ID' : 'en-US';
     return {
-      uniqueLabel: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      uniqueLabel: d.toLocaleDateString(loc, { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' }),
       score: item.score,
       category: item.category,
-      fullDate: d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+      fullDate: d.toLocaleDateString(loc, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
   });
 
@@ -57,7 +60,7 @@ export default function History() {
       return (
         <div className="glass-card" style={{ padding: "1rem", border: `2px solid ${getColor(data.category)}` }}>
           <p style={{ margin: 0, fontWeight: "bold", color: "var(--text-main)" }}>{data.fullDate}</p>
-          <p style={{ margin: "0.5rem 0 0", color: getColor(data.category) }}>Kategori: <span style={{textTransform: "capitalize"}}>{data.category}</span></p>
+          <p style={{ margin: "0.5rem 0 0", color: getColor(data.category) }}>{t("histCategory")}: <span style={{textTransform: "capitalize"}}>{data.category}</span></p>
           <p style={{ margin: 0, fontWeight: "bold", fontSize: "1.2rem", color: "var(--text-main)" }}>Skor: {data.score}</p>
         </div>
       );
@@ -71,27 +74,27 @@ export default function History() {
       <div className="container animate-fade-in" style={{ paddingBottom: "4rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
           <div>
-            <h1 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Riwayat Asesmen</h1>
-            <p style={{ color: "var(--text-muted)" }}>Lacak perkembangan kesehatan mental Anda dari waktu ke waktu.</p>
+            <h1 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>{t("histTitle")}</h1>
+            <p style={{ color: "var(--text-muted)" }}>{t("histDesc")}</p>
           </div>
         </div>
 
         {loading ? (
           <div style={{ textAlign: "center", padding: "3rem" }}>
-            <p style={{ color: "var(--text-muted)" }}>Memuat riwayat Anda...</p>
+            <p style={{ color: "var(--text-muted)" }}>{t("histLoading")}</p>
           </div>
         ) : history.length === 0 ? (
           <div className="glass-card" style={{ padding: "3rem", textAlign: "center" }}>
             <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📭</div>
-            <p style={{ color: "var(--text-muted)", fontSize: "1.1rem", marginBottom: "1.5rem" }}>Belum ada data tes yang ditemukan.</p>
+            <p style={{ color: "var(--text-muted)", fontSize: "1.1rem", marginBottom: "1.5rem" }}>{t("histEmpty")}</p>
             <button onClick={() => window.location.href = "/test"} className="btn btn-primary">
-              Mulai Tes Pertama Anda
+              {t("histStartTest")}
             </button>
           </div>
         ) : (
           <>
             <div className="glass-card" style={{ padding: "2rem", marginBottom: "2rem" }}>
-              <h3 style={{ color: "var(--text-main)", marginBottom: "1.5rem" }}>Grafik Skor PHQ-9</h3>
+              <h3 style={{ color: "var(--text-main)", marginBottom: "1.5rem" }}>{t("histChartTitle")}</h3>
               <div style={{ width: '100%', height: 300 }}>
                 <ResponsiveContainer>
                   <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
@@ -131,17 +134,17 @@ export default function History() {
                     {item.category}
                   </h3>
                   <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>
-                    Tanggal: {new Date(item.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
+                    {t("histDate")}: {new Date(item.created_at).toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' })}
                   </p>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Skor Total</p>
+                  <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>{t("histScore")}</p>
                   <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "var(--text-main)", marginBottom: "0.5rem" }}>{item.score}</p>
                   <button 
                     onClick={() => handleDelete(item.id)}
                     style={{ background: "transparent", border: "none", color: "#EF4444", fontSize: "0.85rem", cursor: "pointer", textDecoration: "underline" }}
                   >
-                    Hapus
+                    {t("histDelete")}
                   </button>
                 </div>
               </div>

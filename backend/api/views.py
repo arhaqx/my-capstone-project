@@ -34,7 +34,7 @@ def translate_text(text):
 # OPENROUTER API
 # =========================
 
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+import google.generativeai as genai
 
 def predict_multiple(answers):
     system_prompt = """You are a mental health analysis assistant. You will be given a list of answers. Each answer has a 'score' (0-3) and a 'text' (user's input).
@@ -60,29 +60,27 @@ You must analyze the inputs and return a strictly formatted JSON object with the
 Rules for scoring:
 1. sum the 'score' of all answers to get `total_score`.
 2. `average_score` is `total_score` / number of answers.
-3. `category` is determined by `total_score`: <= 3 is "Minimal", <= 6 is "Mild", <= 9 is "Moderate", > 9 is "Severe".
+3. `category` is determined by `total_score`: <= 4 is "Minimal", <= 9 is "Mild", <= 14 is "Moderate", > 14 is "Severe".
 4. `interpretation`: "Minimal": "Kondisi mental dalam batas normal.", "Mild": "Terdapat gejala ringan, disarankan menjaga pola hidup sehat.", "Moderate": "Perlu perhatian lebih terhadap kesehatan mental.", "Severe": "Segera cari bantuan profesional."
 5. For each answer, fill the `details` array. Synthesize an `nlp` analysis where you estimate sentiment probabilities (sum to 1.0) and a `phq_score` (0-3) based on the text provided.
 """
 
-    headers = {
-        "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model": "anthropic/claude-3-haiku",
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": json.dumps(answers)}
-        ]
-    }
 
     try:
-        response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=60)
-        response.raise_for_status()
-        res_json = response.json()
-        content = res_json['choices'][0]['message']['content']
+        if not settings.GEMINI_API_KEY:
+            raise Exception("GEMINI_API_KEY is not set in settings")
+
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        
+        # Configure model with system instruction and JSON output constraint
+        model = genai.GenerativeModel(
+            model_name='gemini-2.5-flash',
+            system_instruction=system_prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        
+        response = model.generate_content(json.dumps(answers))
+        content = response.text
         
         try:
             return json.loads(content)
@@ -138,8 +136,14 @@ class PredictMultiView(APIView):
                 status=400
             )
 
-        # PREDICT VIA HF API
+        # PREDICT VIA HF API / GEMINI
         result = predict_multiple(answers)
+
+        if result.get("category") == "Error":
+            return Response(
+                {"error": result.get("error", "Gagal memproses dengan AI")},
+                status=500
+            )
 
         # SAVE HISTORY
         History.objects.create(
@@ -161,7 +165,7 @@ class HistoryView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, id=None):
 
         data = History.objects.filter(
             user=request.user
@@ -172,6 +176,7 @@ class HistoryView(APIView):
         for item in data:
 
             result.append({
+                "id": item.id,
                 "answers": item.answers,
                 "score": item.total_score,
                 "category": item.category,
@@ -179,6 +184,12 @@ class HistoryView(APIView):
             })
 
         return Response(result)
+
+    def delete(self, request, id=None):
+        if id:
+            History.objects.filter(id=id, user=request.user).delete()
+            return Response({"message": "Riwayat berhasil dihapus"})
+        return Response({"error": "ID tidak valid"}, status=400)
 
 
 # =========================
@@ -327,3 +338,59 @@ class NewsView(APIView):
         return Response({
             "articles": result_articles
         })
+
+
+# =========================
+# CHATBOT / AI COMPANION
+# =========================
+
+class ChatView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        messages = request.data.get("messages", [])
+        
+        if not messages or not isinstance(messages, list):
+            return Response({"error": "Format pesan tidak valid"}, status=400)
+
+        try:
+            if not settings.GEMINI_API_KEY:
+                raise Exception("GEMINI_API_KEY is not set in settings")
+
+            genai.configure(api_key=settings.GEMINI_API_KEY)
+            
+            language = request.data.get("language", "id")
+            communication_style = "Indonesian" if language == "id" else "English"
+            
+            system_prompt = f"""You are 'MindCare AI', an empathetic, non-judgmental mental health companion and virtual listener. 
+Your goal is to provide emotional support, listen actively, and use light Cognitive Behavioral Therapy (CBT) techniques.
+You communicate in friendly, comforting {communication_style}.
+CRITICAL RULE: If the user indicates severe depression, self-harm, or suicidal thoughts, you MUST gently but firmly advise them to seek professional medical help immediately and mention that they can use the Panic/Emergency Button in this app to contact 'Layanan Sejiwa (119 ext 8)'. Keep your responses relatively short, conversational, and warm."""
+
+            model = genai.GenerativeModel(
+                model_name='gemini-2.5-flash',
+                system_instruction=system_prompt
+            )
+
+            # Convert frontend messages format to Gemini contents format
+            contents = []
+            for msg in messages:
+                role = "user" if msg.get("role") == "user" else "model"
+                contents.append({
+                    "role": role,
+                    "parts": [msg.get("text", "")]
+                })
+                
+            # Gemini strictly requires the first message in the history to be from 'user'
+            if contents and contents[0]["role"] == "model":
+                contents.pop(0)
+
+            response = model.generate_content(contents)
+            
+            return Response({
+                "role": "model",
+                "text": response.text
+            })
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

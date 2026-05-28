@@ -1,7 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useSettings } from "../contexts/SettingsContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { theme, toggleTheme, language, toggleLanguage, t } = useSettings();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -14,29 +16,66 @@ export default function Navbar() {
         <div className="header-brand">HealSpace</div>
       </Link>
 
-      <div style={{ display: "flex", gap: "1rem" }}>
-        <button 
-          onClick={() => navigate("/dashboard")} 
-          className="btn" 
+      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="btn"
           style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
         >
-          Dashboard
+          {t("navDashboard")}
         </button>
 
-        <button 
-          onClick={() => navigate("/history")} 
-          className="btn" 
+        <button
+          onClick={() => navigate("/history")}
+          className="btn"
           style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
         >
-          Riwayat
+          {t("navHistory")}
         </button>
 
-        <button 
-          onClick={handleLogout} 
-          className="btn btn-primary" 
-          style={{ padding: "0.5rem 1.5rem" }}
+        <button
+          onClick={() => navigate("/chat")}
+          className="btn"
+          style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
         >
-          Logout
+          {t("navChat")}
+        </button>
+
+        <button
+          onClick={() => navigate("/breathing")}
+          className="btn"
+          style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem 1rem" }}
+        >
+          {t("navBreathing")}
+        </button>
+        
+        {/* Toggle Theme & Language */}
+        <div style={{ display: "flex", gap: "0.5rem", borderLeft: "1px solid var(--border)", paddingLeft: "1rem", marginLeft: "0.5rem" }}>
+          <button 
+            onClick={toggleTheme}
+            className="btn"
+            style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem", fontSize: "1.2rem", border: "1px solid var(--border)", borderRadius: "50%", width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          
+          <button 
+            onClick={toggleLanguage}
+            className="btn"
+            style={{ background: "transparent", color: "var(--text-main)", padding: "0.5rem", fontSize: "1rem", border: "1px solid var(--border)", borderRadius: "50%", width: "40px", height: "40px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}
+            title="Switch Language"
+          >
+            {language.toUpperCase()}
+          </button>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="btn btn-primary"
+          style={{ padding: "0.5rem 1.5rem", marginLeft: "1rem" }}
+        >
+          {t("navLogout")}
         </button>
       </div>
     </nav>

@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useSettings } from "../contexts/SettingsContext";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useSettings();
 
   return (
     <>
@@ -13,10 +15,10 @@ export default function Dashboard() {
         <div className="glass-card" style={{ padding: "3rem", marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h1 style={{ color: "var(--primary)", marginBottom: "1rem", fontSize: "2.5rem" }}>
-              Selamat Datang di HealSpace
+              {t("dashWelcome")}
             </h1>
             <p style={{ color: "var(--text-muted)", fontSize: "1.1rem", maxWidth: "600px", lineHeight: "1.6" }}>
-              Kami menyediakan alat bantu asesmen mandiri berbasis AI untuk memantau kesehatan mental Anda. Mulai evaluasi Anda sekarang untuk mendapatkan analisis dan rekomendasi yang dipersonalisasi.
+              {t("dashDesc")}
             </p>
           </div>
           <div style={{ textAlign: "right" }}>
@@ -25,7 +27,7 @@ export default function Dashboard() {
               className="btn btn-primary" 
               style={{ fontSize: "1.2rem", padding: "1rem 2rem", borderRadius: "var(--radius-xl)" }}
             >
-              Mulai Asesmen
+              {t("dashStartTest")}
             </button>
           </div>
         </div>
@@ -40,8 +42,8 @@ export default function Dashboard() {
             onClick={() => navigate("/history")}
           >
             <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>📈</div>
-            <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Riwayat Asesmen</h3>
-            <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Pantau perkembangan kesehatan mental Anda dari waktu ke waktu melalui grafik dan histori tes sebelumnya.</p>
+            <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>{t("dashHistoryTitle")}</h3>
+            <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>{t("dashHistoryDesc")}</p>
           </div>
 
           <div 
@@ -52,8 +54,8 @@ export default function Dashboard() {
             onClick={() => navigate("/test")}
           >
             <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🧠</div>
-            <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Analisis AI</h3>
-            <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Dapatkan wawasan mendalam (Natural Language Processing) dan rekomendasi bacaan berdasarkan kondisi Anda saat ini.</p>
+            <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>{t("dashAITitle")}</h3>
+            <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>{t("dashAIDesc")}</p>
           </div>
 
           <div 
@@ -64,8 +66,8 @@ export default function Dashboard() {
             onClick={() => navigate("/breathing")}
           >
             <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>🌬️</div>
-            <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Relaksasi</h3>
-            <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>Lakukan latihan pernapasan interaktif untuk meredakan stres, panik, dan kecemasan secara instan.</p>
+            <h3 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>{t("dashBreatheTitle")}</h3>
+            <p style={{ color: "var(--text-muted)", lineHeight: "1.5" }}>{t("dashBreatheDesc")}</p>
           </div>
         </div>
 
