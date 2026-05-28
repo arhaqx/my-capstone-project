@@ -21,10 +21,10 @@ export const translations = {
     // Chat
     chatTitle: "Konseling AI",
     chatDesc: "Teman curhat virtual yang siap mendengarkan 24/7 tanpa menghakimi.",
-    chatGreeting: "Halo! Saya MindCare AI. Ada yang ingin kamu ceritakan atau keluhkan hari ini? Saya di sini siap mendengarkan.",
+    chatGreeting: "Halo! Saya HealSpace AI. Ada yang ingin kamu ceritakan atau keluhkan hari ini? Saya di sini siap mendengarkan.",
     chatPlaceholder: "Ketik pesan Anda di sini...",
     chatSend: "Kirim",
-    chatTyping: "MindCare AI sedang mengetik...",
+    chatTyping: "HealSpace AI sedang mengetik...",
     chatError: "Maaf, terjadi kesalahan saat menghubungi server. Mohon coba beberapa saat lagi.",
     
     // History
@@ -69,10 +69,10 @@ export const translations = {
     // Chat
     chatTitle: "AI Counseling",
     chatDesc: "Your virtual companion ready to listen 24/7 without judgment.",
-    chatGreeting: "Hello! I am MindCare AI. Is there anything you'd like to share or vent about today? I'm here to listen.",
+    chatGreeting: "Hello! I am HealSpace AI. Is there anything you'd like to share or vent about today? I'm here to listen.",
     chatPlaceholder: "Type your message here...",
     chatSend: "Send",
-    chatTyping: "MindCare AI is typing...",
+    chatTyping: "HealSpace AI is typing...",
     chatError: "Sorry, an error occurred while connecting to the server. Please try again later.",
     
     // History
