@@ -72,12 +72,13 @@ const Test = () => {
         <form onSubmit={handleSubmit}>
           {phq9Questions.map((q, index) => (
             <div key={index} style={{ marginBottom: "1.5rem", padding: "1.5rem", background: "var(--surface)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-sm)" }}>
-              <p style={{ fontWeight: "600", marginBottom: "1rem" }}>{index + 1}. {q}</p>
+              <p style={{ fontWeight: "600", marginBottom: "1rem", color: "var(--text-main)" }}>{index + 1}. {q}</p>
               <select
                 style={{
                   width: "100%", padding: "0.75rem", borderRadius: "var(--radius-md)",
                   border: "1px solid var(--border)", outline: "none",
-                  fontFamily: "inherit", fontSize: "1rem", cursor: "pointer"
+                  fontFamily: "inherit", fontSize: "1rem", cursor: "pointer",
+                  backgroundColor: "var(--chat-input)", color: "var(--text-main)"
                 }}
                 value={answers[index]}
                 onChange={(e) => handleSelect(index, e.target.value)}
