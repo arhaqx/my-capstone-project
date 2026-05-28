@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 import os
+
 from dotenv import load_dotenv
 
 env_path = BASE_DIR / '.env'
@@ -31,10 +32,10 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
-    "onrender.com",
+    "capstone-fullstackb11.onrender.com",
     "capstonefullstackb11-production.up.railway.app",
     "127.0.0.1",
     "localhost",
@@ -173,5 +174,3 @@ CORS_ALLOWED_ORIGINS = [
     "https://capstone-fullstack-b11.vercel.app",
     "https://healspace-git-main-mureras-projects-454eeb99.vercel.app",
 ]
-
-CORS_ALLOW_ALL_ORIGINS = True
