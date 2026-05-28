@@ -16,6 +16,7 @@ export default function Chat() {
     if (messages.length === 1 && messages[0].role === "model") {
       setMessages([{ role: "model", text: t("chatGreeting") }]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language, t, messages.length]);
 
   const scrollToBottom = () => {
