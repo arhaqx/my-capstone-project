@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import API from "../../services/api";
 
 export default function AdminHistory() {
@@ -6,7 +6,7 @@ export default function AdminHistory() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const url = filter ? `/admin/history/?category=${filter}` : `/admin/history/`;
       const res = await API.get(url);
@@ -16,11 +16,11 @@ export default function AdminHistory() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
   useEffect(() => {
     fetchHistory();
-  }, [filter]);
+  }, [fetchHistory]);
 
   if (loading) return <div>Loading...</div>;
 
@@ -28,8 +28,8 @@ export default function AdminHistory() {
     <div className="glass-card animate-fade-in" style={{ padding: "2rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <h2 style={{ margin: 0 }}>History Monitoring</h2>
-        <select 
-          value={filter} 
+        <select
+          value={filter}
           onChange={(e) => setFilter(e.target.value)}
           style={{ padding: "0.5rem 1rem", borderRadius: "var(--radius-md)", border: "1px solid var(--border)", background: "var(--surface)" }}
         >
@@ -59,18 +59,30 @@ export default function AdminHistory() {
                 <td style={{ padding: "1rem" }}>{h.username}</td>
                 <td style={{ padding: "1rem" }}>{h.total_score}</td>
                 <td style={{ padding: "1rem" }}>
-                  <span style={{ 
-                    padding: "0.25rem 0.5rem", 
-                    borderRadius: "1rem", 
-                    fontSize: "0.85rem",
-                    fontWeight: "600",
-                    backgroundColor: h.category === 'Severe' ? '#FEE2E2' : 
-                                   h.category === 'Moderate' ? '#FEF3C7' : 
-                                   h.category === 'Mild' ? '#DBEAFE' : '#D1FAE5',
-                    color: h.category === 'Severe' ? '#991B1B' : 
-                           h.category === 'Moderate' ? '#92400E' : 
-                           h.category === 'Mild' ? '#1E40AF' : '#065F46'
-                  }}>
+                  <span
+                    style={{
+                      padding: "0.25rem 0.5rem",
+                      borderRadius: "1rem",
+                      fontSize: "0.85rem",
+                      fontWeight: "600",
+                      backgroundColor:
+                        h.category === "Severe"
+                          ? "#FEE2E2"
+                          : h.category === "Moderate"
+                          ? "#FEF3C7"
+                          : h.category === "Mild"
+                          ? "#DBEAFE"
+                          : "#D1FAE5",
+                      color:
+                        h.category === "Severe"
+                          ? "#991B1B"
+                          : h.category === "Moderate"
+                          ? "#92400E"
+                          : h.category === "Mild"
+                          ? "#1E40AF"
+                          : "#065F46",
+                    }}
+                  >
                     {h.category}
                   </span>
                 </td>
@@ -79,7 +91,10 @@ export default function AdminHistory() {
                     <summary style={{ cursor: "pointer", color: "var(--primary)" }}>View</summary>
                     <div style={{ marginTop: "0.5rem", fontSize: "0.85rem", background: "var(--bg-main)", padding: "1rem", borderRadius: "var(--radius-sm)" }}>
                       {h.answers && h.answers.map((ans, idx) => (
-                        <p key={idx} style={{ margin: "0 0 0.5rem 0" }}><strong>Q:</strong> {ans.text} <br/> <strong>Score:</strong> {ans.score}</p>
+                        <p key={idx} style={{ margin: "0 0 0.5rem 0" }}>
+                          <strong>Q:</strong> {ans.text} <br />
+                          <strong>Score:</strong> {ans.score}
+                        </p>
                       ))}
                     </div>
                   </details>
