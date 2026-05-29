@@ -31,9 +31,18 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
+
 
 ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = [
+    "capstone-fullstackb11.onrender.com",
+    "capstonefullstackb11-production.up.railway.app",
+    "127.0.0.1",
+    "localhost",
+]
+
 
 #capstonefullstackb11-production.up.railway.app
 
@@ -55,9 +64,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+
+
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -90,9 +102,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-import os
-from dotenv import load_dotenv
-load_dotenv(BASE_DIR / '.env')
+
 
 import dj_database_url
 
@@ -148,6 +158,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -172,6 +184,9 @@ NEWS_API_KEY = "39d231466a7e47e292281df70fbf7865"
 CORS_ALLOWED_ORIGINS = [
     "https://capstone-fullstack-b11.vercel.app",
     "https://healspace-git-main-mureras-projects-454eeb99.vercel.app",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://frontendcstone.onrender.com",
+    "https://capstone-fullstackb11.onrender.com",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
