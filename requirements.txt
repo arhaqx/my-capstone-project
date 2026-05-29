@@ -165,3 +165,5 @@ widgetsnbextension==4.0.15
 xxhash==3.6.0
 yarl==1.23.0
 gradio
+dj-database-url==2.1.0
+whitenoise==6.6.0
