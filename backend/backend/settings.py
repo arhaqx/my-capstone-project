@@ -96,13 +96,18 @@ load_dotenv(BASE_DIR / '.env')
 
 import dj_database_url
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}",
-        conn_max_age=600,
-        ssl_require=False
-    )
-}
+db_url = os.getenv('DATABASE_URL')
+if db_url:
+    DATABASES = {
+        'default': dj_database_url.parse(db_url, conn_max_age=600, ssl_require=False)
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 
