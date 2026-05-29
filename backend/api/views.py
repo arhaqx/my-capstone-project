@@ -67,37 +67,34 @@ Rules for scoring:
 
 
     try:
-        if not settings.GEMINI_API_KEY:
-            raise Exception("GEMINI_API_KEY is not set in settings")
-
-        genai.configure(api_key=settings.GEMINI_API_KEY)
-        
-        # Configure model with system instruction and JSON output constraint
-        model = genai.GenerativeModel(
-            model_name='gemini-2.5-flash',
-            system_instruction=system_prompt,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        response = model.generate_content(json.dumps(answers))
-        content = response.text
-        
+        if not settings.OPENROUTER_API_KEY:
+            raise Exception("OPENROUTER_API_KEY is not set in settings")
+        # Prepare OpenRouter request
+        openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "anthropic/claude-3-haiku",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": json.dumps(answers)}
+            ]
+        }
+        response = requests.post(openrouter_url, headers=headers, json=payload, timeout=20)
+        response.raise_for_status()
+        result_json = response.json()
+        # Extract content
+        content = result_json["choices"][0]["message"]["content"]
         try:
             return json.loads(content)
         except json.JSONDecodeError:
+            # clean possible markdown fences
             content = content.replace("```json", "").replace("```", "").strip()
             return json.loads(content)
-            
     except Exception as e:
         error_details = str(e)
-        try:
-            if 'response' in locals() and hasattr(response, 'text'):
-                error_details += f" | {response.text}"
-        except:
-            pass
-            
-        print(f"========== OPENROUTER ERROR ==========\n{error_details}\n======================================")
-        
         return {
             "total_score": 0,
             "category": "Error",

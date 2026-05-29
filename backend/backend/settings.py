@@ -176,4 +176,6 @@ NEWS_API_KEY = "39d231466a7e47e292281df70fbf7865"
 CORS_ALLOWED_ORIGINS = [
     "https://capstone-fullstack-b11.vercel.app",
     "https://healspace-git-main-mureras-projects-454eeb99.vercel.app",
+    "http://localhost:3000", 
+    "http://127.0.0.1:3000",
 ]
