@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
+import { parseJwt } from "./AdminRoute";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -9,8 +10,8 @@ export default function Navbar() {
   let isAdmin = false;
   if (token) {
     try {
-      const decoded = JSON.parse(atob(token.split('.')[1]));
-      isAdmin = decoded.role === 'admin' || decoded.role === 'superadmin';
+      const decoded = parseJwt(token);
+      isAdmin = decoded && (decoded.role === 'admin' || decoded.role === 'superadmin');
     } catch(e) {}
   }
 

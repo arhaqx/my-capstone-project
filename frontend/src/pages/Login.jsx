@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { parseJwt } from "../components/AdminRoute";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -19,8 +20,8 @@ export default function Login() {
       
       // Cek apakah user adalah admin
       try {
-        const decoded = JSON.parse(atob(res.data.access.split('.')[1]));
-        if (decoded.role === 'admin' || decoded.role === 'superadmin') {
+        const decoded = parseJwt(res.data.access);
+        if (decoded && (decoded.role === 'admin' || decoded.role === 'superadmin')) {
           navigate("/admin");
           return;
         }
