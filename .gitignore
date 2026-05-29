@@ -68,3 +68,5 @@ Thumbs.db
 # PYTHON PACKAGE
 # ========================
 *.egg-info/
+.vercel
+.env*
