@@ -16,6 +16,18 @@ export default function Login() {
     try {
       const res = await API.post("/auth/login/", form);
       localStorage.setItem("token", res.data.access);
+      
+      // Cek apakah user adalah admin
+      try {
+        const decoded = JSON.parse(atob(res.data.access.split('.')[1]));
+        if (decoded.role === 'admin' || decoded.role === 'superadmin') {
+          navigate("/admin");
+          return;
+        }
+      } catch (e) {
+        console.error("Gagal membaca token", e);
+      }
+      
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
