@@ -21,7 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 import os
-
 from dotenv import load_dotenv
 
 env_path = BASE_DIR / '.env'
@@ -96,9 +95,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-import os
-from dotenv import load_dotenv
-load_dotenv(BASE_DIR / '.env')
+
 
 DATABASES = {
     'default': {
