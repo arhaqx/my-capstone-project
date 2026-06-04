@@ -31,17 +31,9 @@ OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["*"]
-
-ALLOWED_HOSTS = [
-    "capstone-fullstackb11.onrender.com",
-    "capstonefullstackb11-production.up.railway.app",
-    "127.0.0.1",
-    "localhost",
-]
 
 
 #capstonefullstackb11-production.up.railway.app
@@ -181,12 +173,5 @@ SIMPLE_JWT = {
 
 NEWS_API_KEY = "39d231466a7e47e292281df70fbf7865"
 
-CORS_ALLOWED_ORIGINS = [
-    "https://capstone-fullstack-b11.vercel.app",
-    "https://healspace-git-main-mureras-projects-454eeb99.vercel.app",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://frontendcstone.onrender.com",
-    "https://capstone-fullstackb11.onrender.com",
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
