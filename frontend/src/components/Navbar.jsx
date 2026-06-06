@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSettings } from "../contexts/SettingsContext";
 import { parseJwt } from "./AdminRoute";
@@ -5,6 +6,7 @@ import { parseJwt } from "./AdminRoute";
 export default function Navbar() {
   const navigate = useNavigate();
   const { theme, toggleTheme, language, toggleLanguage, t } = useSettings();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   let isAdmin = false;
@@ -26,7 +28,15 @@ export default function Navbar() {
         <div className="header-brand">HealSpace</div>
       </Link>
 
-      <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+      <button 
+        className="hamburger" 
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label="Toggle menu"
+      >
+        ☰
+      </button>
+
+      <div className={`nav-links ${isMenuOpen ? 'open' : ''}`} style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
         <button
           onClick={() => navigate("/dashboard")}
           className="btn"
@@ -70,7 +80,7 @@ export default function Navbar() {
         )}
         
         {/* Toggle Theme & Language */}
-        <div style={{ display: "flex", gap: "0.5rem", borderLeft: "1px solid var(--border)", paddingLeft: "1rem", marginLeft: "0.5rem" }}>
+        <div className="theme-lang-toggle" style={{ display: "flex", gap: "0.5rem", paddingLeft: "0.5rem" }}>
           <button 
             onClick={toggleTheme}
             className="btn"
@@ -93,7 +103,7 @@ export default function Navbar() {
         <button
           onClick={handleLogout}
           className="btn btn-primary"
-          style={{ padding: "0.5rem 1.5rem", marginLeft: "1rem" }}
+          style={{ padding: "0.5rem 1.5rem" }}
         >
           {t("navLogout")}
         </button>

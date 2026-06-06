@@ -12,7 +12,7 @@ export default function Dashboard() {
       <div className="container animate-fade-in" style={{ marginTop: "2rem" }}>
         
         {/* Welcome Section */}
-        <div className="glass-card" style={{ padding: "3rem", marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="glass-card hero-section" style={{ padding: "3rem", marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h1 style={{ color: "var(--primary)", marginBottom: "1rem", fontSize: "2.5rem" }}>
               {t("dashWelcome")}
