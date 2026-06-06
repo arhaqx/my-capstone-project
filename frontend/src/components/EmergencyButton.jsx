@@ -11,8 +11,8 @@ export default function EmergencyButton() {
         onClick={() => setIsOpen(true)}
         style={{
           position: "fixed",
-          bottom: "2rem",
-          right: "2rem",
+          bottom: "6rem",
+          right: "1.5rem",
           width: "60px",
           height: "60px",
           borderRadius: "50%",
