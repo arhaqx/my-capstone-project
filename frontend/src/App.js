@@ -17,6 +17,7 @@ import AdminHistory from "./pages/admin/AdminHistory";
 import AdminHighRisk from "./pages/admin/AdminHighRisk";
 import AdminArticles from "./pages/admin/AdminArticles";
 import { SettingsProvider } from "./contexts/SettingsContext";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
               <Route path="articles" element={<AdminArticles />} />
             </Route>
           </Routes>
+          <Footer />
         </div>
       </BrowserRouter>
     </SettingsProvider>

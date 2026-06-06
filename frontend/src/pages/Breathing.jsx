@@ -40,6 +40,7 @@ export default function Breathing() {
     }
   };
 
+
   const getInstructionText = () => {
     if (!isActive) return "Mulai Relaksasi";
     if (phase === 'inhale') return "Tarik Napas...";
@@ -52,7 +53,7 @@ export default function Breathing() {
     <>
       <Navbar />
       <div className="container animate-fade-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 100px)' }}>
-        
+
         <div style={{ textAlign: "center", marginBottom: "4rem" }}>
           <h1 style={{ color: "var(--text-main)", marginBottom: "0.5rem" }}>Latihan Relaksasi</h1>
           <p style={{ color: "var(--text-muted)", maxWidth: "500px", margin: "0 auto" }}>
@@ -61,11 +62,11 @@ export default function Breathing() {
         </div>
 
         <div style={{ position: "relative", width: "200px", height: "200px", marginBottom: "4rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div 
+          <div
             className={`breathe-circle ${isActive ? phase : ''}`}
-            style={{ 
-              width: "200px", 
-              height: "200px", 
+            style={{
+              width: "200px",
+              height: "200px",
               position: "absolute",
               zIndex: 1,
               background: !isActive ? 'linear-gradient(135deg, #94A3B8, #64748B)' : undefined
@@ -83,12 +84,12 @@ export default function Breathing() {
           </div>
         </div>
 
-        <button 
-          onClick={toggleBreathing} 
+        <button
+          onClick={toggleBreathing}
           className="btn btn-primary"
-          style={{ 
-            padding: "1rem 3rem", 
-            fontSize: "1.2rem", 
+          style={{
+            padding: "1rem 3rem",
+            fontSize: "1.2rem",
             borderRadius: "2rem",
             backgroundColor: isActive ? "#EF4444" : "var(--primary)"
           }}
