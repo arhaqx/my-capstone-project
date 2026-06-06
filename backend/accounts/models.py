@@ -12,8 +12,8 @@ class User(AbstractUser):
 
     @property
     def is_superadmin(self):
-        return self.role == 'superadmin'
+        return self.role == 'superadmin' or self.is_superuser
 
     @property
     def is_admin_or_higher(self):
-        return self.role in ['admin', 'superadmin']
+        return self.role in ['admin', 'superadmin'] or self.is_superuser
