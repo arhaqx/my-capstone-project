@@ -25,7 +25,7 @@
 *   Python 3 & Django
 *   Django REST Framework (DRF)
 *   SimpleJWT (Authentication)
-*   Google Generative AI (Gemini)
+*   Google Generative AI (Gemini API)
 
 **Infrastructure & Deployment:**
 *   **Cloud Provider:** Microsoft Azure (Virtual Machine)
